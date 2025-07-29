@@ -14,4 +14,5 @@ This is a simple AI-powered image caption generator using the [Salesforce BLIP m
 git clone https://github.com/mustafayngl/image-caption-generator
 cd image-caption-generator
 pip install -r requirements.txt
+python app.py
 
