@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Caption Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f9f9f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: #fff;
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 400px;
+        }
+        .drop-zone {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            background: #fafafa;
+            transition: border-color 0.3s;
+        }
+        .drop-zone.dragover {
+            border-color: #007bff;
+        }
+        .drop-zone input[type="file"] {
+            display: none;
+        }
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            border: none;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        img.preview,
+        #uploadedImage {
+            max-width: 100%;
+            max-height: 250px;  /* limit height */
+            margin-top: 15px;
+            border-radius: 8px;
+            object-fit: contain;  /* maintain aspect ratio */
+            display: none;
+        }
+        .spinner {
+            display: none;
+            margin-top: 20px;
+        }
+        .caption-list {
+            text-align: left;
+            margin-top: 15px;
+        }
+    </style>
+    <script>
+        function showLoading() {
+            document.querySelector('.spinner').style.display = 'block';
+        }
+
+        function previewImage(file) {
+            const preview = document.getElementById('imagePreview');
+            const resultSection = document.getElementById('result-section');
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    // Clear old captions and server-uploaded image
+                    if (resultSection) {
+                        resultSection.innerHTML = "";
+                    }
+                }
+                reader.readAsDataURL(file);
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const dropZone = document.querySelector('.drop-zone');
+            const fileInput = document.querySelector('#imageInput');
+
+            dropZone.addEventListener('click', () => fileInput.click());
+
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('dragover');
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                if (e.dataTransfer.files.length > 0) {
+                    fileInput.files = e.dataTransfer.files;
+                    previewImage(fileInput.files[0]);
+                }
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                previewImage(e.target.files[0]);
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Image Caption Generator</h1>
+    <form method="POST" enctype="multipart/form-data" onsubmit="showLoading()">
+        <div class="drop-zone">
+            <p>Drag & Drop an image or click to select</p>
+            <input type="file" id="imageInput" name="image" accept="image/*" required>
+        </div>
+        <button type="submit">Generate Caption</button>
+    </form>
+
+    <img id="imagePreview" class="preview" alt="Preview">
+
+    <div class="spinner">⏳ Generating caption...</div>
+
+    <div id="result-section">
+        {% if image_url %}
+            <img src="{{ image_url }}" alt="Uploaded Image" id="uploadedImage" style="display:block;">
+            <div class="caption-list">
+                <h3>Generated Captions:</h3>
+                <ul>
+                    {% for c in captions %}
+                        <li>{{ c }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    </div>
+    </div>
+</body>
+</html>
